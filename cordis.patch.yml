@@ -1,0 +1,6 @@
+- insert:
+    - id: dsh-token-dashboard
+      name: '@asun-labs/dsh-plugin-token-dashboard'
+      config:
+        fileName: token-dashboard.html
+        readConcurrency: 4
