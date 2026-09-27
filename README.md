@@ -22,10 +22,14 @@
 From the DeepSeek Harness checkout:
 
 ```powershell
+corepack pnpm run build
+corepack pnpm dsh --profile token-dashboard --from-default-profile web --dump-config | Out-Null
 corepack pnpm dsh plugin --profile token-dashboard add D:\git-workspace\AI\DSH\dsh-plugin-token-dashboard
 corepack pnpm dsh --profile token-dashboard --dump-config
-corepack pnpm dsh --profile token-dashboard web
+corepack pnpm dsh --profile token-dashboard --no-open
 ```
+
+The first command must complete successfully because a source checkout needs its official Host, Client, and Typert artifacts before Web can start. The profile initialization command is one-time only; omit `--from-default-profile web` after the profile exists.
 
 In the Web UI, ask the agent:
 
@@ -51,6 +55,7 @@ For fast iteration without installing a profile bundle, create an absolute-path 
 Then run from the Harness checkout:
 
 ```powershell
+corepack pnpm run build
 corepack pnpm dsh web --patch D:\git-workspace\AI\DSH\dsh-plugin-token-dashboard\local.cordis.patch.yml
 ```
 

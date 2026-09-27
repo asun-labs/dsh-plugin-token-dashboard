@@ -4,3 +4,4 @@ dist/
 coverage/
 *.tgz
 token-dashboard.html
+.validation-dsh-home/
