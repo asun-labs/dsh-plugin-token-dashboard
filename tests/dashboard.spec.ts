@@ -41,6 +41,8 @@ describe('extractSessionRequests', () => {
     }))
 
     expect(requests).toEqual([{
+      sessionId: 'session-1',
+      workspace: 'C:\\work\\alpha',
       time: Date.UTC(2026, 8, 20, 8, 30),
       provider: 'deepseek',
       model: 'deepseek-chat',
@@ -61,8 +63,8 @@ describe('extractSessionRequests', () => {
           turn: 2,
           step: 1,
           stream: [
-            { time: 999, chunk: { type: 'usage', usage: { inputTokens: 7, outputTokens: 2 } } },
-            { time: 1000, chunk: { type: 'finish', reason: { kind: 'error' } } },
+            { type: 'chunk', time: 999, chunk: { type: 'usage', usage: { inputTokens: 7, outputTokens: 2 } } },
+            { type: 'chunk', time: 1000, chunk: { type: 'finish', reason: { kind: 'error' } } },
           ],
         },
       }],
@@ -93,6 +95,29 @@ describe('extractSessionRequests', () => {
     })
 
     expect(extractSessionRequests(source).map(request => request.model)).toEqual(['new'])
+  })
+
+  it('falls back to stream usage and ignores malformed usage records', () => {
+    const requests = extractSessionRequests(session({
+      events: [
+        {
+          type: 'assistant/message', time: 3,
+          data: {
+            turn: 1,
+            step: 1,
+            message: { source: {} },
+            stream: [{ type: 'chunk', time: 3, chunk: { type: 'usage', usage: { inputTokens: 5, outputTokens: 1 } } }],
+          },
+        },
+        {
+          type: 'assistant/message', time: 4,
+          data: { usage: { inputTokens: -1, outputTokens: 1 }, stream: [] },
+        },
+      ],
+    }))
+
+    expect(requests).toHaveLength(1)
+    expect(requests[0]).toMatchObject({ provider: 'unknown', model: 'unknown', totalTokens: 6 })
   })
 })
 
@@ -128,6 +153,22 @@ describe('buildDashboardData', () => {
     expect(data.workspaces.map(workspace => workspace.name)).toEqual(['alpha', 'beta'])
     expect(data.models.map(model => model.name)).toEqual(['v4', 'qwen'])
   })
+
+  it('drops sessions without usage and labels a missing workspace', () => {
+    const data = buildDashboardData([
+      session({ header: { id: 'empty', createdAt: 1 } }),
+      session({
+        header: { id: 'used', createdAt: 2 },
+        events: [{
+          type: 'assistant/message', time: 3,
+          data: { message: { source: { provider: 'p', model: 'm' } }, stream: [], usage: { inputTokens: 1, outputTokens: 1 } },
+        }],
+      }),
+    ], 4)
+
+    expect(data.summary.sessions).toBe(1)
+    expect(data.workspaces).toMatchObject([{ name: '(no workspace)', path: '(no workspace)' }])
+  })
 })
 
 describe('resolveDashboardPath', () => {
@@ -139,5 +180,10 @@ describe('resolveDashboardPath', () => {
   it('rejects path traversal in the configured file name', () => {
     expect(() => resolveDashboardPath('C:\\work\\alpha', '..\\secrets.html'))
       .toThrow(/plain file name/)
+  })
+
+  it('requires an HTML extension', () => {
+    expect(() => resolveDashboardPath('C:\\work\\alpha', 'dashboard.json'))
+      .toThrow(/end with \.html/)
   })
 })
