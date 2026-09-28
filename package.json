@@ -20,6 +20,7 @@
   "scripts": {
     "build": "tsdown",
     "check": "pnpm run typecheck && pnpm run test:coverage && pnpm run build",
+    "prepublishOnly": "pnpm run check",
     "prepare": "pnpm run build",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
@@ -33,6 +34,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/asun-labs/dsh-plugin-token-dashboard.git"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "homepage": "https://github.com/asun-labs/dsh-plugin-token-dashboard#readme",
   "bugs": "https://github.com/asun-labs/dsh-plugin-token-dashboard/issues",

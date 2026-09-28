@@ -17,7 +17,31 @@
 - Node.js `^22.19.0` or `>=24.0.0`
 - DeepSeek Harness `0.1.7` prerelease line
 
-## Install from a local checkout
+## Install
+
+Install the public npm package into a Harness profile:
+
+```powershell
+dsh plugin --profile token-dashboard add @asun-labs/dsh-plugin-token-dashboard
+dsh --profile token-dashboard --dump-config
+dsh --profile token-dashboard --no-open
+```
+
+If the profile does not exist yet, initialize it once before installing the plugin:
+
+```powershell
+dsh --profile token-dashboard --from-default-profile web --dump-config | Out-Null
+```
+
+In the Web UI, ask the agent:
+
+```text
+Use the token_dashboard tool to generate my token usage dashboard.
+```
+
+The tool writes `token-dashboard.html` into the active session's workspace and reports its absolute path.
+
+## Validate from a local checkout
 
 From the DeepSeek Harness checkout:
 
@@ -30,14 +54,6 @@ corepack pnpm dsh --profile token-dashboard --no-open
 ```
 
 The first command must complete successfully because a source checkout needs its official Host, Client, and Typert artifacts before Web can start. The profile initialization command is one-time only; omit `--from-default-profile web` after the profile exists.
-
-In the Web UI, ask the agent:
-
-```text
-Use the token_dashboard tool to generate my token usage dashboard.
-```
-
-The tool writes `token-dashboard.html` into the active session's workspace and reports its absolute path.
 
 ## Local source overlay
 
